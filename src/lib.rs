@@ -39,10 +39,6 @@ pub fn run_server() {
     }
 }
 
-fn main() {
-    laughing_tribble::run_server();
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -52,15 +48,12 @@ mod tests {
 
     #[test]
     fn test_server_starts() {
-        // Start server in a separate thread
         thread::spawn(|| {
             run_server();
         });
 
-        // Give the server a moment to start
         thread::sleep(Duration::from_millis(100));
 
-        // Try to connect
         match TcpStream::connect("127.0.0.1:7878") {
             Ok(_) => assert!(true),
             Err(e) => panic!("Failed to connect to server: {}", e),
@@ -69,23 +62,19 @@ mod tests {
 
     #[test]
     fn test_connection_receives_response() {
-        // Start server in a separate thread
         thread::spawn(|| {
             run_server();
         });
 
         thread::sleep(Duration::from_millis(100));
 
-        // Connect and send a basic HTTP request
         if let Ok(mut stream) = TcpStream::connect("127.0.0.1:7878") {
             let request = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
             stream.write_all(request.as_bytes()).unwrap();
 
-            // Read response
             let mut response = String::new();
             stream.read_to_string(&mut response).unwrap();
 
-            // Basic validation of response
             assert!(response.contains("HTTP/1.1 200 OK"));
             assert!(response.contains("Content-Type: text/html"));
         } else {
